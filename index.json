@@ -5,7 +5,7 @@
         "link": "https://gist.github.com/suhas1294/30943a08992482d2aaac6943cb964e5e"
     },
     {
-        "page_title": "How server works",
+        "page_title": "How server works (JAVA)",
         "short_description": "How server works",
         "link": "https://gist.github.com/suhas1294/9c43c4993ba705a1a8c6df4ac0c13724"
     },
@@ -13,5 +13,50 @@
         "page_title": "Spring-IOC & DI",
         "short_description": "Inversion control & dependency injection",
         "link": "https://gist.github.com/suhas1294/ca13d131af7ac3e4023d9dab7317b350"
+    },
+    {
+        "page_title": "instantce initialiser (java)",
+        "short_description": "Instance initialiser block in class",
+        "link": "https://gist.github.com/suhas1294/6bf8ef4ae4ff280b469e62d7a6c17dda"
+    },
+    {
+        "page_title": "Comparable interface (java)",
+        "short_description": "Java comparable interface example",
+        "link": "https://gist.github.com/suhas1294/49ac088379fb5c8b82cae77e12211b38"
+    },
+    {
+        "page_title": "Java IO demo",
+        "short_description": "Java IO demo",
+        "link": "https://gist.github.com/suhas1294/c0510f8619d7432fba62c91ffdc1b277"
+    },
+    {
+        "page_title": "Java, Multithreading-1",
+        "short_description": "01-Naive multhreading",
+        "link": "https://gist.github.com/suhas1294/89fe4d9aa718327cd1131da53f0f7eea#file-01_naive_multithreading-java"
+    },
+    {
+        "page_title": "Java, Multithreading-2",
+        "short_description": "wait and notify between threads",
+        "link": "https://gist.github.com/suhas1294/89fe4d9aa718327cd1131da53f0f7eea#file-02_waitandnotify-java"
+    },
+    {
+        "page_title": "Java, Multithreading-3",
+        "short_description": "Executor framework",
+        "link": "https://gist.github.com/suhas1294/89fe4d9aa718327cd1131da53f0f7eea#file-03_executor-java"
+    },
+    {
+        "page_title": "Java, Multithreading-4",
+        "short_description": "executor framework with future demo",
+        "link": "https://gist.github.com/suhas1294/89fe4d9aa718327cd1131da53f0f7eea#file-04_executor_service_future-java"
+    },
+    {
+        "page_title": "Java, Multithreading-5",
+        "short_description": "Executor service with timed future.",
+        "link": "https://gist.github.com/suhas1294/89fe4d9aa718327cd1131da53f0f7eea#file-05_executor_service_timed_future-java"
+    },
+    {
+        "page_title": "Java, Multithreading-6",
+        "short_description": "Executor service Invoke all demo",
+        "link": "https://gist.github.com/suhas1294/89fe4d9aa718327cd1131da53f0f7eea#file-06_executor_service_timed_invokeall-java"
     }
 ]
