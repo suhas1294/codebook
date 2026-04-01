@@ -154,6 +154,16 @@
         height: 150px;
       }
 
+      /* Hide "Index" text on mobile, show only hamburger */
+      .index-text {
+        display: none;
+      }
+
+      .index-btn {
+        padding: 6px 8px;
+        font-size: 14px;
+      }
+
       pre, pre code, code[class*="language-"] {
         font-size: 12px !important;
       }
@@ -162,7 +172,7 @@
 </head>
 <body class="nowrap">
 
-<div class="index-btn" onclick="showIndex()">☰ Index</div>
+<div class="index-btn" onclick="showIndex()">☰ <span class="index-text">Index</span></div>
 <div class="toggle-wrap" id="wrapBtn" onclick="toggleWrap()">Wrap</div>
 
 <div id="reader" class="container"></div>
