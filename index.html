@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Book Reader</title>
+
+  <!-- Prism for code highlighting -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" rel="stylesheet" />
+
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #fff;
+      color: #111;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: auto;
+      padding: 20px;
+    }
+
+    .nav-btn {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 10px 20px;
+      background: #007bff;
+      border: none;
+      color: white;
+      border-radius: 20px;
+      cursor: pointer;
+      z-index: 100;
+    }
+
+    .prev-zone {
+      position: fixed;
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 80px;
+      height: 200px;
+      z-index: 1;
+      cursor: pointer;
+    }
+
+    .next-zone {
+      position: fixed;
+      right: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 80px;
+      height: 200px;
+      z-index: 1;
+      cursor: pointer;
+    }
+
+    .index-btn {
+      position: fixed;
+      top: 10px;
+      left: 10px;
+      background: #007bff;
+      color: white;
+      padding: 10px 15px;
+      border-radius: 5px;
+      cursor: pointer;
+      z-index: 100;
+    }
+
+    .toggle-wrap {
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      background: #007bff;
+      color: white;
+      padding: 10px 15px;
+      border-radius: 5px;
+      cursor: pointer;
+      z-index: 100;
+    }
+
+    .index-page {
+      display: none;
+    }
+
+    .index-item {
+      padding: 10px;
+      border-bottom: 1px solid #ddd;
+      cursor: pointer;
+    }
+
+    .index-item:hover {
+      background: #f0f0f0;
+    }
+
+    .search-box {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 10px;
+    }
+
+    pre {
+      font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+      font-size: 14px;
+      line-height: 1.6;
+      padding: 15px;
+      border-radius: 5px;
+      background: #f5f5f5;
+    }
+
+    code {
+      font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+      font-size: 14px;
+    }
+
+    /* Unwrapped state (default) - horizontal scroll */
+    .nowrap pre {
+      overflow-x: auto;
+      white-space: pre;
+      word-wrap: normal;
+    }
+
+    /* Wrapped state - break long lines */
+    body:not(.nowrap) pre {
+      overflow-x: visible;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+    }
+
+    body:not(.nowrap) pre code {
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+
+    .progress {
+      position: fixed;
+      bottom: 60px;
+      width: 100%;
+      text-align: center;
+      font-size: 14px;
+      z-index: 100;
+    }
+
+    @media (max-width: 768px) {
+      .container { padding: 10px; }
+
+      /* Smaller zones for mobile */
+      .prev-zone, .next-zone {
+        width: 60px;
+        height: 150px;
+      }
+
+      pre, pre code, code[class*="language-"] {
+        font-size: 12px !important;
+      }
+    }
+  </style>
+</head>
+<body class="nowrap">
+
+<div class="index-btn" onclick="showIndex()">☰ Index</div>
+<div class="toggle-wrap" id="wrapBtn" onclick="toggleWrap()">Wrap</div>
+
+<div id="reader" class="container"></div>
+
+<button class="nav-btn" onclick="nextPage()">Next</button>
+<div class="progress" id="progress"></div>
+
+<div class="prev-zone" onclick="prevPage()"></div>
+<div class="next-zone" onclick="nextPage()"></div>
+
+<div id="indexPage" class="container index-page">
+  <input class="search-box" placeholder="Search..." oninput="searchIndex(this.value)" />
+  <div id="indexList"></div>
+</div>
+
+<script>
+let data = [];
+let current = 0;
+let wrap = false;
+const cache = {};
+
+fetch('index.json')
+  .then(res => res.json())
+  .then(json => {
+    data = json;
+
+    const savedPage = localStorage.getItem('lastPage');
+    if (savedPage) current = parseInt(savedPage);
+
+    renderPage();
+    renderIndex();
+  });
+
+function fetchGistRaw(item) {
+  // Extract username and gist ID from the link
+  // Example: https://gist.github.com/suhas1294/ca13d131af7ac3e4023d9dab7317b350
+  const urlParts = item.link.split('/');
+  const gistId = urlParts.pop();
+  const username = urlParts.pop();
+
+  if (cache[gistId]) return Promise.resolve(cache[gistId]);
+
+  // Auto-generate raw link from gist URL
+  const rawLink = `https://gist.githubusercontent.com/${username}/${gistId}/raw`;
+
+  // Try GitHub API first
+  return fetch(`https://api.github.com/gists/${gistId}`)
+    .then(res => {
+      if (!res.ok) throw new Error('API failed');
+      return res.json();
+    })
+    .then(gist => {
+      const file = Object.values(gist.files)[0];
+      const result = {
+        content: file.content,
+        lang: file.language?.toLowerCase() || 'markup'
+      };
+      cache[gistId] = result;
+      return result;
+    })
+    .catch(() => {
+      // Fallback to auto-generated raw link (handles rate limits)
+      return fetch(rawLink)
+        .then(res => res.text())
+        .then(text => {
+          const result = { content: text, lang: 'markup' };
+          cache[gistId] = result;
+          return result;
+        });
+    });
+}
+
+function renderPage() {
+  document.getElementById('indexPage').style.display = 'none';
+  document.getElementById('reader').style.display = 'block';
+
+  const item = data[current];
+
+  localStorage.setItem('lastPage', current);
+
+  fetchGistRaw(item).then(({content, lang}) => {
+    document.getElementById('reader').innerHTML = `
+      <h2>${item.page_title}</h2>
+      <p>${item.short_description}</p>
+      <pre><code class="language-${lang}">${escapeHtml(content)}</code></pre>
+    `;
+
+    document.getElementById('progress').innerText = `Page ${current + 1} / ${data.length}`;
+
+    Prism.highlightAll();
+  });
+}
+
+function nextPage() {
+  if (current < data.length - 1) {
+    current++;
+    renderPage();
+  }
+}
+
+function prevPage() {
+  if (current > 0) {
+    current--;
+    renderPage();
+  }
+}
+
+function showIndex() {
+  document.getElementById('reader').style.display = 'none';
+  document.getElementById('indexPage').style.display = 'block';
+}
+
+function renderIndex(filtered = data) {
+  const list = document.getElementById('indexList');
+  list.innerHTML = '';
+
+  filtered.forEach((item) => {
+    const index = data.indexOf(item);
+
+    const div = document.createElement('div');
+    div.className = 'index-item';
+    div.innerHTML = `<b>${item.page_title}</b><br/>${item.short_description}`;
+
+    div.onclick = () => {
+      current = index;
+      renderPage();
+    };
+
+    list.appendChild(div);
+  });
+}
+
+function searchIndex(query) {
+  query = query.toLowerCase();
+
+  const filtered = data.filter(d =>
+    d.page_title.toLowerCase().includes(query) ||
+    d.short_description.toLowerCase().includes(query)
+  );
+
+  renderIndex(filtered);
+}
+
+function toggleWrap() {
+  wrap = !wrap;
+  document.body.classList.toggle('nowrap', !wrap);
+  document.getElementById('wrapBtn').innerText = wrap ? 'Unwrap' : 'Wrap';
+}
+
+function escapeHtml(text) {
+  return text.replace(/[&<>]/g, tag => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;'
+  }[tag]));
+}
+
+// Swipe support
+let startX = 0;
+
+document.addEventListener('touchstart', e => {
+  startX = e.touches[0].clientX;
+});
+
+document.addEventListener('touchend', e => {
+  let endX = e.changedTouches[0].clientX;
+
+  if (startX - endX > 50) nextPage();
+  if (endX - startX > 50) prevPage();
+});
+
+// Keyboard navigation
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight') nextPage();
+  if (e.key === 'ArrowLeft') prevPage();
+});
+</script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-java.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-sql.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-javascript.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+</body>
+</html>
