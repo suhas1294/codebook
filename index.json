@@ -1,0 +1,17 @@
+[
+    {
+        "page_title": "SQL Basics",
+        "short_description": "Basics of mysql",
+        "link": "https://gist.github.com/suhas1294/30943a08992482d2aaac6943cb964e5e"
+    },
+    {
+        "page_title": "How server works",
+        "short_description": "How server works",
+        "link": "https://gist.github.com/suhas1294/9c43c4993ba705a1a8c6df4ac0c13724"
+    },
+    {
+        "page_title": "Spring-IOC & DI",
+        "short_description": "Inversion control & dependency injection",
+        "link": "https://gist.github.com/suhas1294/ca13d131af7ac3e4023d9dab7317b350"
+    }
+]
